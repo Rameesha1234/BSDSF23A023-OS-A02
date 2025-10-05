@@ -103,6 +103,8 @@ Commands tested:
 ./bin/ls -l
 ./bin/ls -l /etc
 
+'''
+
 **Results:**
 - `./bin/ls` → Multi-column layout (Feature-3).  
 - `./bin/ls -l` → One file per line with full details.  
