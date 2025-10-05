@@ -155,9 +155,12 @@ drwxrwxr-x 5 rameesha rameesha 4096 Oct  5 09:00 ..
 -rw-rw-r-- 1 rameesha rameesha  292 Oct  5 05:52 Makefile
 ```
 ## Feature-6: Recursive Directory Listing (-R Flag)
+---
 **Q1. What is the purpose of the -R flag in ls?
 
 The -R option lists not only the current directory’s contents but also all subdirectories recursively.
+
+---
 
 **Q2. How was recursion implemented?
 
@@ -174,9 +177,12 @@ if (recursive_flag && S_ISDIR(statbuf.st_mode) &&
     do_ls(path, all_flag, long_flag, recursive_flag, time_flag);
 }
 ```
+---
 **Q3. How do we prevent infinite recursion (e.g., with . and ..)?
 
 The program explicitly skips these names so recursion never loops back.
+
+---
 
 **Q4. What is the expected output of ./bin/ls -R?
 
@@ -195,13 +201,14 @@ ls-v1.0.0.o
 ./bin:
 ls
 With combined flags (-lR, -aR, etc.), the output is detailed and recursive.
-
-Feature-7: Sorting by Modification Time (-t)
 ```
+## Feature-7: Sorting by Modification Time (-t)
+---
 **Q1. What does the -t flag do in ls?
 
 It sorts files and directories by their last modification time (st_mtime), newest first.
 
+---
 **Q2. How was this implemented?
 
 Added a time_flag.
@@ -211,11 +218,11 @@ Extended do_ls() to accept time_flag.
 Implemented compare_times() using lstat() and st_mtime.
 
 Switched to compare_times when -t is active.
-
+---
 **Q3. How are combined flags handled (like -lt, -lat)?
 
 The parser sets multiple flags when these are used (long_flag + time_flag, etc.), matching real ls behavior.
-
+---
 **Q4. Example outputs
 
 ```bash
@@ -254,6 +261,7 @@ Recursive directory traversal (-R) with safe handling of . and .. (Feature-6)
 
 Sorting by modification time (-t), including combined options (-lt, -lat, etc.) (Feature-7)
 ---
+
 ## Key Takeaways
 Learned how system calls (stat, lstat, readdir, ioctl) provide file metadata and terminal info.
 
