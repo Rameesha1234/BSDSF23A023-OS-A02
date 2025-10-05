@@ -103,7 +103,7 @@ Commands tested:
 ./bin/ls -l
 ./bin/ls -l /etc
 
-'''
+```
 
 **Results:**
 - `./bin/ls` → Multi-column layout (Feature-3).  
