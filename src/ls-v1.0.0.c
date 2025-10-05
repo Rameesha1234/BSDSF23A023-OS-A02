@@ -1,10 +1,7 @@
 /*
 * Programming Assignment 02: lsv1.0.0
-* Base version modified up to Feature 4:
-*   ✅ Feature 1 – Basic listing
-*   ✅ Feature 2 – Skip hidden files
-*   ✅ Feature 3 – Multi-column display
-*   ✅ Feature 4 – Long listing (-l)
+* Author: Rameesha Shakeel (BSDSF23A023)
+* Features implemented: Feature1..Feature5 (-a, -l)
 */
 
 #include <stdio.h>
@@ -21,52 +18,47 @@
 
 extern int errno;
 
-void do_ls(const char *dir, int long_flag);
+void do_ls(const char *dir, int long_flag, int all_flag);
 void print_columns(char *names[], int count);
 void print_long(const char *dir, const char *filename);
 
 int main(int argc, char const *argv[])
 {
     int long_flag = 0;
+    int all_flag = 0;
     const char *dirs[64];
     int dir_count = 0;
 
+    /* Parse arguments: handle -l, -a, -la, -al; don't add flags to dirs[] */
     for (int i = 1; i < argc; i++)
     {
-        if (strcmp(argv[i], "-l") == 0)
-            long_flag = 1;
-        else
-            dirs[dir_count++] = argv[i];
+        if (strcmp(argv[i], "-l") == 0) { long_flag = 1; continue; }
+        if (strcmp(argv[i], "-a") == 0) { all_flag = 1; continue; }
+        if (strcmp(argv[i], "-la") == 0 || strcmp(argv[i], "-al") == 0) { long_flag = 1; all_flag = 1; continue; }
+        /* ignore anything that looks like a flag */
+        if (argv[i][0] == '-') continue;
+        /* otherwise treat as directory */
+        dirs[dir_count++] = argv[i];
     }
 
     if (dir_count == 0)
-    {
-        do_ls(".", long_flag);
-    }
-    else
-    {
-        for (int i = 0; i < dir_count; i++)
-        {
+        do_ls(".", long_flag, all_flag);
+    else {
+        for (int i = 0; i < dir_count; i++) {
             printf("Directory listing of %s:\n", dirs[i]);
-            do_ls(dirs[i], long_flag);
+            do_ls(dirs[i], long_flag, all_flag);
             puts("");
         }
     }
-
     return 0;
 }
 
-/* ---------------------------------------------------------- */
-
-void do_ls(const char *dir, int long_flag)
+/* Read directory entries, sort, and print (columns or long) */
+void do_ls(const char *dir, int long_flag, int all_flag)
 {
     struct dirent *entry;
     DIR *dp = opendir(dir);
-    if (dp == NULL)
-    {
-        fprintf(stderr, "Cannot open directory: %s\n", dir);
-        return;
-    }
+    if (!dp) { fprintf(stderr, "Cannot open directory: %s\n", dir); return; }
 
     errno = 0;
     char **names = NULL;
@@ -74,122 +66,70 @@ void do_ls(const char *dir, int long_flag)
 
     while ((entry = readdir(dp)) != NULL)
     {
-        if (entry->d_name[0] == '.')
-            continue;
+        if (!all_flag && entry->d_name[0] == '.') continue;
 
-        if (count >= capacity)
-        {
+        if (count >= capacity) {
             capacity = (capacity == 0) ? 64 : capacity * 2;
             char **tmp = realloc(names, capacity * sizeof(char *));
-            if (!tmp)
-            {
-                perror("realloc");
-                for (int k = 0; k < count; k++) free(names[k]);
-                free(names);
-                closedir(dp);
-                return;
-            }
+            if (!tmp) { perror("realloc"); for (int k=0;k<count;k++) free(names[k]); free(names); closedir(dp); return; }
             names = tmp;
         }
 
         names[count] = strdup(entry->d_name);
-        if (!names[count])
-        {
-            perror("strdup");
-            for (int k = 0; k < count; k++) free(names[k]);
-            free(names);
-            closedir(dp);
-            return;
-        }
+        if (!names[count]) { perror("strdup"); for (int k=0;k<count;k++) free(names[k]); free(names); closedir(dp); return; }
         count++;
     }
 
-    if (errno != 0)
-        perror("readdir failed");
-
+    if (errno != 0) perror("readdir failed");
     closedir(dp);
 
-    /* Sort alphabetically */
+    /* simple sort */
     for (int i = 0; i < count - 1; i++)
-    {
         for (int j = i + 1; j < count; j++)
-        {
-            if (strcmp(names[i], names[j]) > 0)
-            {
-                char *temp = names[i];
-                names[i] = names[j];
-                names[j] = temp;
-            }
-        }
-    }
+            if (strcmp(names[i], names[j]) > 0) { char *t = names[i]; names[i] = names[j]; names[j] = t; }
 
-    /* Choose printing mode */
-    if (long_flag)
-    {
-        for (int i = 0; i < count; i++)
-            print_long(dir, names[i]);
-    }
-    else
-    {
+    if (long_flag) {
+        for (int i = 0; i < count; i++) print_long(dir, names[i]);
+    } else {
         print_columns(names, count);
     }
 
-    for (int i = 0; i < count; i++)
-        free(names[i]);
+    for (int i = 0; i < count; i++) free(names[i]);
     free(names);
 }
 
-/* ---------------------------------------------------------- */
-
+/* Column layout: down-then-across */
 void print_columns(char *names[], int count)
 {
-    if (count == 0)
-        return;
-
+    if (count == 0) return;
     int maxlen = 0;
-    for (int i = 0; i < count; i++)
-    {
-        int len = strlen(names[i]);
-        if (len > maxlen)
-            maxlen = len;
-    }
+    for (int i = 0; i < count; i++) { int l = strlen(names[i]); if (l > maxlen) maxlen = l; }
 
     struct winsize w;
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1 || w.ws_col == 0)
-        w.ws_col = 80;
-
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1 || w.ws_col == 0) w.ws_col = 80;
     int spacing = 2;
-    int col_width = maxlen + spacing;
-    int cols = w.ws_col / col_width;
-    if (cols < 1)
-        cols = 1;
+    int colw = maxlen + spacing;
+    int cols = w.ws_col / colw; if (cols < 1) cols = 1;
     int rows = (count + cols - 1) / cols;
 
-    for (int r = 0; r < rows; r++)
-    {
-        for (int c = 0; c < cols; c++)
-        {
-            int index = r + c * rows;
-            if (index < count)
-                printf("%-*s", col_width, names[index]);
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            int idx = r + c * rows;
+            if (idx < count) printf("%-*s", colw, names[idx]);
         }
         printf("\n");
     }
 }
 
-/* ---------------------------------------------------------- */
-
+/* Long format per file */
 void print_long(const char *dir, const char *filename)
 {
     char path[1024];
-    snprintf(path, sizeof(path), "%s/%s", dir, filename);
+    if (strcmp(dir, ".") == 0) snprintf(path, sizeof(path), "%s", filename);
+    else snprintf(path, sizeof(path), "%s/%s", dir, filename);
 
     struct stat st;
-    if (stat(path, &st) == -1)
-    {
-        perror("stat");
-        return;
-    }
+    if (stat(path, &st) == -1) { perror("stat"); return; }
 
     char perms[11];
     perms[0] = S_ISDIR(st.st_mode) ? 'd' : '-';
@@ -205,8 +145,7 @@ void print_long(const char *dir, const char *filename)
     perms[10] = '\0';
 
     struct passwd *pw = getpwuid(st.st_uid);
-    struct group  *gr = getgrgid(st.st_gid);
-
+    struct group *gr = getgrgid(st.st_gid);
     char timebuf[64];
     struct tm *mt = localtime(&st.st_mtime);
     strftime(timebuf, sizeof(timebuf), "%b %e %H:%M", mt);
