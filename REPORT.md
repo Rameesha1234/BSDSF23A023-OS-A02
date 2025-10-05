@@ -1,123 +1,109 @@
-REPORT
+# REPORT
 
-I am Rameesha Shakeel (BSDSF23A023). This report will contain answers for each feature.
+I am **Rameesha Shakeel (BSDSF23A023)**. This report contains answers for each feature of the assignment.
 
-Feature-1: Project Setup and Initial Build
+---
 
-(No report questions were assigned for this feature.)
+## Feature-1: Project Setup and Initial Build
+*(No report questions were assigned for this feature.)*
 
-Feature-2: File Metadata and Permissions
+---
 
-Q1. What is the crucial difference between stat() and lstat()? When is it more appropriate to use lstat()?
+## Feature-2: File Metadata and Permissions
 
-stat() follows symbolic links and returns information about the file that the link points to.
+**Q1. What is the crucial difference between `stat()` and `lstat()`? When is it more appropriate to use `lstat()`?**
 
-lstat() does not follow symbolic links and instead returns information about the link itself.
+- `stat()` follows symbolic links and returns information about the file that the link points to.  
+- `lstat()` does not follow symbolic links and instead returns information about the link itself.  
+- In `ls`, `lstat()` is more appropriate because we want to correctly identify symbolic links (show them as `l` in the permission string).
 
-In ls, lstat() is more appropriate because we want to correctly identify symbolic links (show them as l in the permission string).
+---
 
-Q2. How to extract file type and permission bits from st_mode?
+**Q2. How to extract file type and permission bits from `st_mode`?**
 
-st_mode is a bit field that encodes both file type and permission bits.
+- `st_mode` is a bit field that encodes both file type and permission bits.  
+- File type is extracted using macros like:  
+  - `S_ISDIR(st_mode)` → directory  
+  - `S_ISREG(st_mode)` → regular file  
+- Permissions are checked with bitwise AND:  
+  - `st_mode & S_IRUSR` → owner read permission  
+  - `st_mode & S_IWUSR` → owner write permission  
+  - `st_mode & S_IXUSR` → owner execute permission  
+- Similarly for group (`S_IRGRP`, etc.) and others (`S_IROTH`, etc.).
 
-File type is extracted using macros like S_ISDIR(st_mode) (directory), S_ISREG(st_mode) (regular file), etc.
+---
 
-Permissions are checked with bitwise AND:
+## Feature-3: Column Display (Down Then Across)
 
-st_mode & S_IRUSR → owner read permission
+**Q1. Explain the general logic for printing items in a "down then across" columnar format. Why is a simple single loop insufficient?**
 
-st_mode & S_IWUSR → owner write permission
+- In "down then across" layout, filenames are printed vertically first, then move across columns.  
+- The program calculates how many rows and columns fit based on terminal width and longest filename length.  
+- For each row, it prints items at indexes:  
+  - `row`  
+  - `row + rows`  
+  - `row + 2*rows`  
+  - … and so on, until all columns are printed.  
+- A single sequential loop would only produce horizontal (row-major) output, not the required vertical layout.
 
-st_mode & S_IXUSR → owner execute permission
+---
 
-Similarly for group (S_IRGRP, etc.) and others (S_IROTH, etc.).
+**Q2. What is the purpose of the `ioctl()` system call in this context? What are the limitations of using a fixed width (e.g., 80 columns)?**
 
-Feature-3: Column Display (Down Then Across)
+- `ioctl()` with the `TIOCGWINSZ` request returns the current terminal window size (number of columns).  
+- This allows the `ls` program to dynamically adapt its column layout to the user’s screen width.  
+- If only a fixed width (like 80 characters) is assumed:  
+  - On wider terminals, output would waste space and look sparse.  
+  - On narrower terminals, filenames could wrap incorrectly or misalign.
 
-Q1. Explain the general logic for printing items in a "down then across" columnar format. Why is a simple single loop insufficient?
+---
 
-In "down then across" layout, filenames are printed vertically first, then move across columns.
+## Feature-4: Long Listing (-l Option)
 
-The program calculates how many rows and columns fit based on terminal width and longest filename length.
+**Q1. What is the purpose of the `-l` option in `ls`, and what new information does it display?**
 
-For each row, it prints items at indexes:
+- The `-l` option enables long-listing mode, which displays detailed information about each file or directory line by line instead of the default multi-column format.  
+- It provides:  
+  - File type and permissions (e.g., `-rw-r--r--`)  
+  - Number of hard links  
+  - Owner (username)  
+  - Group name  
+  - File size (in bytes)  
+  - Last modification time  
+  - File name  
 
-row
+---
 
-row + rows
+**Q2. Which system calls or library functions are used to implement the long-listing mode, and what are their purposes?**
 
-row + 2*rows
+- `stat()` / `lstat()` → Retrieves file metadata such as permissions, size, ownership, and timestamps.  
+- `getpwuid()` → Converts the numeric user ID (UID) into the corresponding username.  
+- `getgrgid()` → Converts the numeric group ID (GID) into the group name.  
+- `localtime()` → Converts the file’s last modification time into a local time structure.  
+- `strftime()` → Formats the time into a readable string (e.g., `Oct 5 09:40`).  
 
-… and so on, until all columns are printed.
+---
 
-A single sequential loop would only produce horizontal (row-major) output, not the required vertical layout.
+**Q3. Describe the major code modifications required for this feature.**
 
-Q2. What is the purpose of the ioctl() system call in this context? What are the limitations of using a fixed width (e.g., 80 columns)?
+- Added a `long_flag` variable and updated argument parsing in `main()` to detect the `-l` option.  
+- Modified the `do_ls()` function signature to accept the long flag.  
+- Implemented a helper function `print_entry()` that uses `lstat()` to print detailed file information.  
+- Preserved all previous functionalities:  
+  - Hidden files remain excluded unless `-a` is used.  
+  - Sorting is still alphabetical.  
 
-ioctl() with the TIOCGWINSZ request returns the current terminal window size (number of columns).
+---
 
-This allows the ls program to dynamically adapt its column layout to the user’s screen width.
-
-If only a fixed width (like 80 characters) is assumed:
-
-On wider terminals, output would waste space and look sparse.
-
-On narrower terminals, filenames could wrap incorrectly or misalign.
-
-Feature-4: Long Listing (-l Option)
-
-Q1. What is the purpose of the -l option in ls, and what new information does it display?
-
-The -l option enables long-listing mode, which displays detailed information about each file or directory line by line instead of the default multi-column format.
-
-It provides:
-
-File type and permissions (e.g., -rw-r--r--)
-
-Number of hard links
-
-Owner (username)
-
-Group name
-
-File size (in bytes)
-
-Last modification time
-
-File name
-
-Q2. Which system calls or library functions are used to implement the long-listing mode, and what are their purposes?
-
-stat() / lstat() → Retrieves file metadata such as permissions, size, ownership, and timestamps.
-
-getpwuid() → Converts the numeric user ID (UID) into the corresponding username.
-
-getgrgid() → Converts the numeric group ID (GID) into the group name.
-
-localtime() → Converts the file’s last modification time into a local time structure.
-
-strftime() → Formats the time into a readable string (e.g., Oct 5 09:40).
-
-Q3. Describe the major code modifications required for this feature.
-
-Added a long_flag variable and updated argument parsing in main() to detect the -l option.
-
-Modified the do_ls() function signature to accept the long flag.
-
-Implemented a helper function print_entry() that uses lstat() to print detailed file information.
-
-Preserved all previous functionalities (hidden files remain excluded unless -a is used; sorting is still alphabetical).
-
-Q4. How was this feature tested, and what were the results?
+**Q4. How was this feature tested, and what were the results?**
 
 Commands tested:
-
+```bash
 ./bin/ls
-./bin/ls -l
-./bin/ls -l /etc
 
+---
 
-Results:
+**Results:
 
 ./bin/ls → Multi-column layout (Feature-3).
 
@@ -129,15 +115,19 @@ Hidden files excluded unless combined with -a.
 
 ✅ Feature-4 works as expected and matches real ls -l.
 
-Feature-5: Display Hidden Files (-a Flag)
+---
 
-Q1. What is the purpose of the -a option in ls?
+## Feature-5: Display Hidden Files (-a Flag)
+
+**Q1. What is the purpose of the -a option in ls?
 
 The -a option includes hidden files (those starting with . like .bashrc).
 
 Without -a, these are skipped.
 
-Q2. How was the -a flag implemented?
+---
+
+**Q2. How was the -a flag implemented?
 
 In argument parsing, the program checks for -a, -la, or -al.
 
@@ -148,8 +138,9 @@ While reading entries with readdir(), normally hidden files are skipped unless a
 if (!all_flag && entry->d_name[0] == '.')
     continue;
 
+---
 
-Q3. Why support combined flags like -la or -al?
+**Q3. Why support combined flags like -la or -al?
 
 Real ls implementations allow combining options.
 
@@ -169,13 +160,17 @@ drwxrwxr-x 2 rameesha rameesha 4096 Oct  5 10:13 .
 drwxrwxr-x 5 rameesha rameesha 4096 Oct  5 09:00 ..
 -rw-rw-r-- 1 rameesha rameesha  292 Oct  5 05:52 Makefile
 
-Feature-6: Recursive Directory Listing (-R Flag)
+---
 
-Q1. What is the purpose of the -R flag in ls?
+## Feature-6: Recursive Directory Listing (-R Flag)
+
+**Q1. What is the purpose of the -R flag in ls?
 
 The -R option lists not only the current directory’s contents but also all subdirectories recursively.
 
-Q2. How was recursion implemented?
+---
+
+**Q2. How was recursion implemented?
 
 A new variable recursive_flag is set when -R is detected.
 
@@ -189,8 +184,9 @@ if (recursive_flag && S_ISDIR(statbuf.st_mode) &&
     do_ls(path, all_flag, long_flag, recursive_flag, time_flag);
 }
 
+---
 
-Q3. How do we prevent infinite recursion (e.g., with . and ..)?
+**Q3. How do we prevent infinite recursion (e.g., with . and ..)?
 
 The program explicitly skips these names so recursion never loops back.
 
@@ -213,13 +209,17 @@ ls
 
 With combined flags (-lR, -aR, etc.), the output is detailed and recursive.
 
-Feature-7: Sorting by Modification Time (-t)
+---
 
-Q1. What does the -t flag do in ls?
+## Feature-7: Sorting by Modification Time (-t)
+
+**Q1. What does the -t flag do in ls?
 
 It sorts files and directories by their last modification time (st_mtime), newest first.
 
-Q2. How was this implemented?
+---
+
+**Q2. How was this implemented?
 
 Added a time_flag.
 
@@ -229,11 +229,15 @@ Implemented compare_times() using lstat() and st_mtime.
 
 Switched to compare_times when -t is active.
 
-Q3. How are combined flags handled (like -lt, -lat)?
+---
+
+**Q3. How are combined flags handled (like -lt, -lat)?
 
 The parser sets multiple flags when these are used (long_flag + time_flag, etc.), matching real ls behavior.
 
-Q4. Example outputs
+---
+
+**Q4. Example outputs
 
 $ touch oldfile
 $ sleep 2
@@ -269,7 +273,8 @@ Recursive directory traversal (-R) with safe handling of . and .. (Feature-6)
 
 Sorting by modification time (-t), including combined options (-lt, -lat, etc.) (Feature-7)
 
-Key Takeaways
+--- 
+## Key Takeaways
 
 Learned how system calls (stat, lstat, readdir, ioctl) provide file metadata and terminal info.
 
@@ -281,7 +286,11 @@ Produced modular, testable code that evolves feature by feature, just like profe
 
 Used incremental commits and clear documentation (REPORT.md) to mirror real software engineering practices.
 
-Final Result
+---
+
+## Final Result
 
 My implementation behaves very close to the standard Linux ls, while being written entirely from scratch in C.
 This assignment gave me deep insights into both UNIX internals and software engineering discipline (version control, testing, and reporting).
+./bin/ls -l
+./bin/ls -l /etc
