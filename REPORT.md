@@ -141,31 +141,26 @@ All previous features remain functional, making the output format similar to the
 - During argument parsing in `main()`, the program checks for `-a`, `-la`, or `-al`.  
 - When detected, it sets a boolean `all_flag = 1`.  
 - In `do_ls()`, while reading directory entries with `readdir()`, the program normally skips files starting with `.`:  
+
   ```c
   if (!all_flag && entry->d_name[0] == '.')
       continue;
+This condition allows hidden files to appear only when -a (or combined forms) are used.
 
-  
-  ---
-  
-  **Q3. Why do we also support combined flags like -la or -al?
+Q3. Why do we also support combined flags like -la or -al?
 
--Real ls implementations allow combining options in a single argument.
+Real ls implementations allow combining options in a single argument.
 
--Our argument parser checks for these combinations and enables both the long listing (-l) and all-files (-a) modes together:
+Our argument parser checks for these combinations and enables both the long listing (-l) and all-files (-a) modes together:
 
 if (strcmp(argv[i], "-la") == 0 || strcmp(argv[i], "-al") == 0)
 {
     long_flag = 1;
     all_flag = 1;
 }
+This makes the behavior more realistic and user-friendly.
 
-
--This makes the behavior more realistic and user-friendly.
-
----
-
-**Q4. What should the output look like?
+Q4. What should the output look like?
 
 Without -a: only visible files are shown.
 
@@ -181,5 +176,6 @@ drwxrwxr-x 2 rameesha rameesha 4096 Oct  5 10:13 .
 drwxrwxr-x 5 rameesha rameesha 4096 Oct  5 09:00 ..
 -rw-rw-r-- 1 rameesha rameesha  292 Oct  5 05:52 Makefile
 ...
+
 
 
