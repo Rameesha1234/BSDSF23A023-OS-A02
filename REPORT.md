@@ -125,5 +125,25 @@ Hidden files remain excluded, as per previous features.
 Feature-4 successfully implements the long-listing (-l) option, enhancing the program to display file permissions, ownership, size, and modification time.
 All previous features remain functional, making the output format similar to the standard Unix ls -l behavior.
 
+
+## Feature-5: Display Hidden Files (-a Flag)
+
+**Q1. What is the purpose of the `-a` option in the `ls` command?**
+
+- The `-a` (all) option tells `ls` to include *hidden files* in its output.  
+- Hidden files in Linux start with a dot (`.`), such as `.bashrc` or `.git`.  
+- Without the `-a` flag, these files are skipped from the listing.
+
+---
+
+**Q2. How was the `-a` flag implemented in this project?**
+
+- During argument parsing in `main()`, the program checks for `-a`, `-la`, or `-al`.  
+- When detected, it sets a boolean `all_flag = 1`.  
+- In `do_ls()`, while reading directory entries with `readdir()`, the program normally skips files starting with `.`:  
+  ```c
+  if (!all_flag && entry->d_name[0] == '.')
+      continue;
+
 - Therefore, `ioctl()` makes the program more robust and professional.
 
