@@ -26,3 +26,28 @@ When is it more appropriate to use lstat()?**
   - `st_mode & S_IWUSR` → owner write permission  
   - `st_mode & S_IXUSR` → owner execute permission  
 - Similarly for group (`S_IRGRP`, etc.) and others (`S_IROTH`, etc.).
+
+## Feature-3: Column Display (Down Then Across)
+
+**Q1. Explain the general logic for printing items in a "down then across" columnar format. Why is a simple single loop insufficient?**
+
+- In "down then across" layout, filenames are printed vertically first, then move across columns.  
+- The program calculates how many rows and columns fit based on terminal width and longest filename length.  
+- For each row, it prints items at indexes:  
+  - row  
+  - row + rows  
+  - row + 2*rows  
+  - … and so on, until all columns are printed.  
+- A single sequential loop would only produce horizontal (row-major) output, not the required vertical layout.
+
+---
+
+**Q2. What is the purpose of the ioctl system call in this context? What are the limitations of using a fixed width (e.g., 80 columns)?**
+
+- `ioctl()` with the `TIOCGWINSZ` request returns the current terminal window size (number of columns).  
+- This allows the `ls` program to dynamically adapt its column layout to the user’s screen width.  
+- If only a fixed width (like 80 characters) is assumed:  
+  - On wider terminals, output would waste space and look sparse.  
+  - On narrower terminals, filenames could wrap incorrectly or misalign.  
+- Therefore, `ioctl()` makes the program more robust and professional.
+
