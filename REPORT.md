@@ -226,3 +226,29 @@ ls-v1.0.0.o
 ls
 When combined with other flags (-lR, -aR, or -laR), it produces a long, detailed recursive listing including hidden files.
 
+## Feature-7: Sorting by Modification Time (-t)
+
+**Q1. What does the `-t` flag do in `ls`?**  
+It sorts files and directories by their last modification time (`st_mtime`), newest first.
+
+**Q2. How was this implemented?**  
+- Added a new `time_flag`.  
+- Extended `do_ls` to accept `time_flag`.  
+- Implemented `compare_times()` that uses `lstat()` to compare `st_mtime`.  
+- Switched to `compare_times` when `-t` is active.  
+
+**Q3. How are combined flags handled (like `-lt`, `-lat`)?**  
+Argument parsing sets multiple flags at once (e.g., `long_flag + time_flag`, `all_flag + long_flag + time_flag`).  
+
+**Q4. Example outputs**
+
+```bash
+$ touch oldfile
+$ sleep 2
+$ touch newfile
+$ ./bin/ls -t
+newfile    oldfile
+
+$ ./bin/ls -lt
+-rw-r--r-- 1 rameesha rameesha     0 Oct  5 10:12 newfile
+-rw-r--r-- 1 rameesha rameesha     0 Oct  5 10:10 oldfile
