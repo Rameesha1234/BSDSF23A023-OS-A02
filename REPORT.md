@@ -146,27 +146,26 @@ Without -a: only visible files.
 With -a: hidden files like ., .., .git also shown.
 
 With -la: all files shown with long-format details.
-
+```
 Example:
 
-bash
-Copy code
+```bash
 drwxrwxr-x 2 rameesha rameesha 4096 Oct  5 10:13 .
 drwxrwxr-x 5 rameesha rameesha 4096 Oct  5 09:00 ..
 -rw-rw-r-- 1 rameesha rameesha  292 Oct  5 05:52 Makefile
-Feature-6: Recursive Directory Listing (-R Flag)
-Q1. What is the purpose of the -R flag in ls?
+```
+## Feature-6: Recursive Directory Listing (-R Flag)
+**Q1. What is the purpose of the -R flag in ls?
 
 The -R option lists not only the current directory’s contents but also all subdirectories recursively.
 
-Q2. How was recursion implemented?
+**Q2. How was recursion implemented?
 
 A new variable recursive_flag is set when -R is detected.
 
 Inside do_ls(), for each entry that is a directory (excluding . and ..), the function calls itself recursively:
 
-c
-Copy code
+```c
 if (recursive_flag && S_ISDIR(statbuf.st_mode) &&
     strcmp(names[i], ".") != 0 &&
     strcmp(names[i], "..") != 0)
@@ -174,16 +173,16 @@ if (recursive_flag && S_ISDIR(statbuf.st_mode) &&
     printf("\n%s:\n", path);
     do_ls(path, all_flag, long_flag, recursive_flag, time_flag);
 }
-Q3. How do we prevent infinite recursion (e.g., with . and ..)?
+```
+**Q3. How do we prevent infinite recursion (e.g., with . and ..)?
 
 The program explicitly skips these names so recursion never loops back.
 
-Q4. What is the expected output of ./bin/ls -R?
+**Q4. What is the expected output of ./bin/ls -R?
 
 Example:
 
-bash
-Copy code
+```bash
 .:
 Makefile  src  obj  bin
 
@@ -198,11 +197,12 @@ ls
 With combined flags (-lR, -aR, etc.), the output is detailed and recursive.
 
 Feature-7: Sorting by Modification Time (-t)
-Q1. What does the -t flag do in ls?
+```
+**Q1. What does the -t flag do in ls?
 
 It sorts files and directories by their last modification time (st_mtime), newest first.
 
-Q2. How was this implemented?
+**Q2. How was this implemented?
 
 Added a time_flag.
 
@@ -212,14 +212,14 @@ Implemented compare_times() using lstat() and st_mtime.
 
 Switched to compare_times when -t is active.
 
-Q3. How are combined flags handled (like -lt, -lat)?
+**Q3. How are combined flags handled (like -lt, -lat)?
 
 The parser sets multiple flags when these are used (long_flag + time_flag, etc.), matching real ls behavior.
 
-Q4. Example outputs
+**Q4. Example outputs
 
-bash
-Copy code
+```bash
+
 $ touch oldfile
 $ sleep 2
 $ touch newfile
@@ -233,7 +233,9 @@ $ ./bin/ls -lt
 
 $ ./bin/ls -lat
 .  ..  newfile  oldfile  Makefile  ...
-📌 Conclusion
+```
+---
+## 📌 Conclusion
 In this project, I successfully implemented a simplified but powerful version of the Unix ls command (lsv1.0.0).
 
 The program now supports:
@@ -251,8 +253,8 @@ Displaying hidden files (-a) and combined flags like -la (Feature-5)
 Recursive directory traversal (-R) with safe handling of . and .. (Feature-6)
 
 Sorting by modification time (-t), including combined options (-lt, -lat, etc.) (Feature-7)
-
-Key Takeaways
+---
+## Key Takeaways
 Learned how system calls (stat, lstat, readdir, ioctl) provide file metadata and terminal info.
 
 Practiced argument parsing to support multiple flags and their combinations.
@@ -263,6 +265,7 @@ Produced modular, testable code that evolves feature by feature, just like profe
 
 Used incremental commits and clear documentation (REPORT.md) to mirror real software engineering practices.
 
-Final Result
+---
+## Final Result
 My implementation behaves very close to the standard Linux ls, while being written entirely from scratch in C.
 This assignment gave me deep insights into both UNIX internals and software engineering discipline (version control, testing, and reporting).
