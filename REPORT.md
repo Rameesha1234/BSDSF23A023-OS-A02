@@ -146,12 +146,13 @@ All previous features remain functional, making the output format similar to the
       continue;
 
   
+  ---
   
   **Q3. Why do we also support combined flags like -la or -al?
 
-Real ls implementations allow combining options in a single argument.
+-Real ls implementations allow combining options in a single argument.
 
-Our argument parser checks for these combinations and enables both the long listing (-l) and all-files (-a) modes together:
+-Our argument parser checks for these combinations and enables both the long listing (-l) and all-files (-a) modes together:
 
 if (strcmp(argv[i], "-la") == 0 || strcmp(argv[i], "-al") == 0)
 {
@@ -160,9 +161,11 @@ if (strcmp(argv[i], "-la") == 0 || strcmp(argv[i], "-al") == 0)
 }
 
 
-This makes the behavior more realistic and user-friendly.
+-This makes the behavior more realistic and user-friendly.
 
-Q4. What should the output look like?
+---
+
+**Q4. What should the output look like?
 
 Without -a: only visible files are shown.
 
