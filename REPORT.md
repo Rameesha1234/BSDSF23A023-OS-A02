@@ -155,7 +155,7 @@ drwxrwxr-x 5 rameesha rameesha 4096 Oct  5 09:00 ..
 -rw-rw-r-- 1 rameesha rameesha  292 Oct  5 05:52 Makefile
 ```
 ## Feature-6: Recursive Directory Listing (-R Flag)
----
+
 **Q1. What is the purpose of the -R flag in ls?
 
 The -R option lists not only the current directory’s contents but also all subdirectories recursively.
@@ -203,7 +203,7 @@ ls
 With combined flags (-lR, -aR, etc.), the output is detailed and recursive.
 ```
 ## Feature-7: Sorting by Modification Time (-t)
----
+
 **Q1. What does the -t flag do in ls?
 
 It sorts files and directories by their last modification time (st_mtime), newest first.
