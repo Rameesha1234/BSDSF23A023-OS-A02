@@ -2,6 +2,10 @@
 
 I am Rameesha Shakeel (BSDSF23A023). This report will contain answers for each feature.
 
+## Feature-1: Project Setup and Initial Build
+*(No report questions were assigned for this feature.)*
+
+---
 ## Feature-2 Report
 
 **Q1: What is the crucial difference between stat() and lstat()?  
