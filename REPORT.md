@@ -48,6 +48,82 @@ When is it more appropriate to use lstat()?**
 - This allows the `ls` program to dynamically adapt its column layout to the user’s screen width.  
 - If only a fixed width (like 80 characters) is assumed:  
   - On wider terminals, output would waste space and look sparse.  
-  - On narrower terminals, filenames could wrap incorrectly or misalign.  
+  - On narrower terminals, filenames could wrap incorrectly or misalign.
+ 
+  - Feature-4: Long Listing (-l Option)
+
+Q1. What is the purpose of the -l option in ls, and what new information does it display?
+
+The -l option enables long-listing mode, which displays detailed information about each file or directory line by line instead of the default multi-column format.
+
+It provides additional details, including:
+
+File type and permissions (e.g., -rw-r--r--)
+
+Number of hard links
+
+Owner (username)
+
+Group name
+
+File size (in bytes)
+
+Last modification time
+
+File name
+
+This behavior matches the standard Linux ls -l command format.
+
+Q2. Which system calls or library functions are used to implement the long-listing mode, and what are their purposes?
+
+stat() → Retrieves file metadata such as permissions, size, ownership, and timestamps.
+
+getpwuid() → Converts the numeric user ID (UID) into the corresponding username.
+
+getgrgid() → Converts the numeric group ID (GID) into the group name.
+
+localtime() → Converts the file’s last modification time into a local time structure.
+
+strftime() → Formats the time into a readable date/time string (e.g., Oct 5 09:40).
+
+Q3. Describe the major code modifications required for this feature.
+
+Added a long_flag variable and updated command-line argument parsing in main() to detect the -l option.
+
+Modified the do_ls() function signature to do_ls(const char *dir, int long_flag) to support both normal and long-listing outputs.
+
+Implemented a helper function print_long() that uses stat() to print detailed file information in formatted style.
+
+Preserved all previous functionalities:
+
+Hidden files remain excluded (Feature-2).
+
+Files stay alphabetically sorted.
+
+Default output still uses the column layout (Feature-3) when -l is not specified.
+
+Q4. How was this feature tested, and what were the results?
+
+Commands tested:
+
+./bin/ls
+./bin/ls -l
+./bin/ls -l /etc
+
+
+Results:
+
+./bin/ls → Displays files in multi-column layout (Feature-3).
+
+./bin/ls -l → Displays one file per line with full details.
+
+Works correctly for multiple directories.
+
+Hidden files remain excluded, as per previous features.
+
+✅ Conclusion:
+Feature-4 successfully implements the long-listing (-l) option, enhancing the program to display file permissions, ownership, size, and modification time.
+All previous features remain functional, making the output format similar to the standard Unix ls -l behavior.
+
 - Therefore, `ioctl()` makes the program more robust and professional.
 
