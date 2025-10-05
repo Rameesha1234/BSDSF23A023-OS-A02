@@ -48,7 +48,7 @@ void mode_to_str(mode_t m, char *buf) {
     buf[6] = (m & S_IXGRP) ? ((m & S_ISGID) ? 's' : 'x') : ((m & S_ISGID) ? 'S' : '-');
     buf[7] = (m & S_IROTH) ? 'r' : '-';
     buf[8] = (m & S_IWOTH) ? 'w' : '-';
-    buf[9] = (m & S_IXOTH) ? ((m & S_ISVTX) ? 't' : 'x') : ((m & S_ISVTX) ? 'T' : '-');
+    buf[9] = (m & S_IXOTH) ? 'x' : '-';
     buf[10] = '\0';
 }
 
