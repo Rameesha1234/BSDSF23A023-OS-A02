@@ -177,5 +177,52 @@ drwxrwxr-x 5 rameesha rameesha 4096 Oct  5 09:00 ..
 -rw-rw-r-- 1 rameesha rameesha  292 Oct  5 05:52 Makefile
 ...
 
+## Feature-6: Recursive Directory Listing (-R Flag)
 
+**Q1. What is the purpose of the `-R` flag in the `ls` command?**
+
+- The `-R` (recursive) option lists not only the current directory’s contents but also all subdirectories, one after another.  
+- Each subdirectory is displayed with a heading showing its path.
+
+---
+
+**Q2. How was recursion implemented in this project?**
+
+- A new variable `recursive_flag` is set to `1` when the `-R` option is detected.  
+- Inside the `do_ls()` function, for every entry that is a directory, the function calls itself recursively:  
+
+  ```c
+  if (recursive_flag && S_ISDIR(statbuf.st_mode) &&
+      strcmp(names[i], ".") != 0 &&
+      strcmp(names[i], "..") != 0)
+  {
+      printf("\n%s:\n", path);
+      do_ls(path, all_flag, long_flag, recursive_flag);
+  }
+This prints the current directory’s files first, then moves into each subdirectory.
+
+Q3. How do we prevent infinite recursion (e.g., with . and ..)?
+
+The program explicitly skips these directories using:
+
+if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+    continue;
+This ensures recursion never loops back into the same or parent directory.
+
+Q4. What is the expected output of ./bin/ls -R?
+
+The command prints all files in the current directory, followed by each subdirectory’s contents:
+
+.:
+Makefile  src  obj  bin
+
+./src:
+ls-v1.0.0.c
+
+./obj:
+ls-v1.0.0.o
+
+./bin:
+ls
+When combined with other flags (-lR, -aR, or -laR), it produces a long, detailed recursive listing including hidden files.
 
