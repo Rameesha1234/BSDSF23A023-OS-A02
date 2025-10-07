@@ -1,7 +1,7 @@
 /*
 * Programming Assignment 02: lsv1.0.0
 * Author: Rameesha Shakeel (BSDSF23A023)
-* Features implemented: Feature1..Feature5 (-a, -l)
+* Features implemented:Feature 1–7 (-a, -l, -R, -t)
 */
 
 #include <stdio.h>
